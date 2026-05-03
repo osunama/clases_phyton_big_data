@@ -10,6 +10,13 @@
 
 # menu, pintar el menu con las opciones - lista notas, añadir una nota al final, añadir una nota por posicion, mostrar la lista ordenada, calcular media, calcular maximo, calcular minimo, cuantos alumnos han aprobado. salir
 notas = [7.5, 4.0, 8.5, 6.0, 9.0, 3.5, 5.5]
+def contar_aprobados():
+    aprobados = len([n for n in notas if n >= 5])
+    return aprobados
+def calcular_media():
+    media = sum(notas) / len(notas)
+    return media
+    
 def mostrar_notas(notas):
     for nota in notas:
         if nota < 5:
@@ -43,13 +50,13 @@ def main():
     elif option == '4':
         print('Ordenar de menor a mayor')
     elif option == '5':
-        print('Calcular media')
+        print(calcular_media())
     elif option == '6':
-        print('Calcular maximo')
+        print(f'Nota más alta: {max(notas)}')
     elif option == '7':
-        print('Calcular minimo')
+        print(f'Nota más baja: {min(notas)}')
     elif option == '8':
-        print('Cuanto aprobados')
+        print(contar_aprobados())
     elif option == 'x':
         print('Hasta pronto')
         return
