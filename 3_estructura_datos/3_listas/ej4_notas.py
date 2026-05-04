@@ -14,11 +14,22 @@ def mostrar_ordenadas():
     ordenadas = sorted(notas, reverse=True)
     for i, nota in enumerate(ordenadas, 1):
         return ordenadas
-def contar_aprobados():
-    aprobados = len([n for n in notas if n >= 5])
-    return aprobados
+# opcion 1: junior
+def contar_notas(notas):
+    contador = 0
+    for nota in notas:
+        if nota >= 5:
+            contador += 1
+    return contador
+# opcion 2: senior
+def contar_notas_senior(notas, tipo='aprobados'):
+    lista_aprobados = list(filter(lambda nota: nota >= 5, notas))
+    if tipo == 'suspensos':
+        return len(notas) - len(lista_aprobados)
+    return len(lista_aprobados)
+
 def calcular_media():
-    media = sum(notas) / len(notas)
+    media = round(sum(notas) / len(notas), 2)
     return media
     
 def mostrar_notas(notas):
@@ -52,7 +63,9 @@ def main():
     elif option == '3':
         print('Añadir nota por posición')
     elif option == '4':
-        print(mostrar_ordenadas())
+        ordenadas = sorted(notas, reverse=True)
+        print(ordenadas)
+        # print(mostrar_ordenadas())
     elif option == '5':
         print(calcular_media())
     elif option == '6':
@@ -60,7 +73,9 @@ def main():
     elif option == '7':
         print(f'Nota más baja: {min(notas)}')
     elif option == '8':
-        print(contar_aprobados())
+       tipo = input('¿Qué buscas, aprobados o suspensos?: ')
+       numero = contar_notas_senior(notas, tipo)
+       print(f"El numero de {tipo} es igual a {numero}")
     elif option == 'x':
         print('Hasta pronto')
         return

@@ -13,8 +13,8 @@ print(alumno['nombre']) # Juan Antonio
 # getters
 print( alumno.get('edad') ) # 44
 
-alumno['tlf'] = 644563456
-alumno['direccion'] = 'Calle Fray Luis de Leon'
+alumno['tlf'] = 644563456 #modifica clave teléfono
+alumno['direccion'] = 'Calle Fray Luis de Leon' #añade cla dirección
 
 print(alumno)
 
@@ -40,3 +40,22 @@ print( producto['caracteristicas']['ram'] )
 # discos 
 for i in range(len(producto['caracteristicas']['disco'])):
     print(producto['caracteristicas']['disco'][i])
+
+# podemos extraer todos lo elementos
+for valor in alumno.values():
+    print(valor)
+
+print("----------")
+# podemos extraer todas las claves
+for clave in alumno.keys():
+    print(clave)
+    
+print("----------")
+
+# podemos extraer todas las claves con sus elementos
+for clave, valor in alumno.items():
+    print( f"{clave}: {valor}" )
+
+print (alumno.values())
+print (alumno.keys())
+print (alumno.items())
