@@ -117,5 +117,4 @@ def ordenar(peliculas, ordenacion):
     return resultado
 
 peliculas_ordenadas = ordenar(peliculas2, 'dsc') # 'dsc"
-pintar_peliculas(peliculas_ordenadas, 'Peliculas ordenadas')42
-7/9+*-
+pintar_peliculas(peliculas_ordenadas, 'Peliculas ordenadas')
