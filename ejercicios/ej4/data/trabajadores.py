@@ -1,4 +1,4 @@
-ctrabajadores = [
+trabajadores = [
     {
         "id": 1, 
         "nombre": "Ana García", 
