@@ -1,0 +1,9 @@
+id,titulo,genero,precio_original,precio,lanzamiento,en_stock
+1,The Legend of Zelda,Aventura,59.99,47.99,2017,True
+2,Elden Ring,RPG,69.9,55.92,2022,True
+3,Stardew Valley,Simulacion,14.99,11.99,2016,True
+4,FIFA 23,Deportes,25.0,20.0,2022,False
+5,Cyberpunk 2077,RPG,39.95,31.96,2020,True
+6,Mario Kart 8,Carreras,45.0,36.0,2014,True
+7,Portal 2,Puzzle,9.99,7.99,2011,False
+8,God of War Ragnarok,Accion,65.0,52.0,2022,True
