@@ -1,39 +1,39 @@
-# crear un programa en python que me permita hacer una lista de la compra, 
-# Un menu con tres opciones
-   # [1].Añadir un producto (nombre, cantidad)
-   # [2].Mostrar Lista de la compra
-   # [3]. Borrar lista
-   # [x]. Salir 
    
 # trabajamos con modulos separados. modulo principal y secundario
 
 # el fichero se llamará lista_compra.txt
-# 
+from lib.functions import add_item, show_shoppingcart, delete_shoppingcart
+
 
 def main():
-    menu = """
-[1]. Añadir producto
-[2]. Mostrar lista
+    menu = """Bienvenido a lista Compra
+[1]. Añadir un producto
+[2]. Mostrar Lista de la compra
 [3]. Borrar lista
-[x]. Salir
-################################
-"""
+[x]. Salir 
+    """
     print(menu)
+    option = input('Dime que opción quieres: ')
+    if option == '1':
+        nombre = input('Que producto necesitas: ').strip()
+        cantidad = input('Cuantos necesitas: ').strip()
+        msg = add_item(nombre, cantidad)
+        print(msg)
+    elif option == '2':
+        msg = show_shoppingcart()
+        print(msg)
+    elif option == '3':
+        msg = delete_shoppingcart()
+        print(msg)
+    elif option == 'x':
+        print('Hasta pronto')
+        return 
+    main()
 
-option = input("¿Qué quieres hacer:?")
-if option == "1":
-    producto = input('Introduce producto: ')
-    cantidad = input('Introduce cantidad: ')
-elif option == "2":
-    print("Mostrar lista")
-elif option == "3":
-    print("Borrar lista")
-elif option == "x":
-    print("Hasta pronto")
-else:
-    print("Opción no valida")
-   
+
+main()
 
 
 
 main()
+

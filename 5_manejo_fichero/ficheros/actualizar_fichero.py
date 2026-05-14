@@ -1,5 +1,5 @@
 def actualizar_datos(ruta, nombre):
-    fichero = open(f"{ruta}{nombre}" , "a", encoding='UTF-8')
+    fichero = open(f"{ruta}{nombre}" , "a", encoding='UTF-8', newline="")
     nombre = input('Dime el nombre del alumno: ')
     nota = input('Dime la nota del alumno: ')
     fichero.write(f"{nombre}: {nota}\n")

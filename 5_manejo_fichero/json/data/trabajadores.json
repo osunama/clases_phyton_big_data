@@ -33,19 +33,5 @@
         "apellidos": "Pérez Alvárez",
         "correo": "lucia@gmail.com",
         "departamento": "Cuentas"
-    },
-    {
-        "id": 6,
-        "nombre": "ggg",
-        "apellidos": "jjj",
-        "correo": "jjj",
-        "departamento": "jjj"
-    },
-    {
-        "id": 7,
-        "nombre": "kuj",
-        "apellidos": "juuygh",
-        "correo": "kij",
-        "departamento": "jh"
     }
 ]
