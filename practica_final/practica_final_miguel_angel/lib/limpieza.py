@@ -89,7 +89,7 @@ def eliminar_vacios(lista, campo_critico):
 
 
 #=============== NORMALIZACIÓN CATEGORÍAS =====================
-   mapeo_generos = {
+mapeo_generos = {
     # Rock
     "rock":         "Rock",
     "rokc":         "Rock",
@@ -199,3 +199,38 @@ def normalizar_categoria(valor, diccionario_mapeo):
         print (valor)
 
 normalizar_categoria("e", mapeo_generos)
+
+
+# =============== ELIMINAR DUPLICADOS =====================
+# Recibe una lista de registros y los campos que identifican
+# un registro único. Cuando encuentra dos iguales, conserva
+# el más completo (el que tiene menos campos vacíos).
+
+def eliminar_duplicados(datos, campos_clave):
+
+     vistos = {}  # diccionario auxiliar: {clave: registro}
+
+     for registro in datos:
+
+         # Construimos la clave normalizando: minúsculas y sin espacios extra
+         # tuple() porque las claves de un diccionario no pueden ser listas
+         clave = tuple(str(registro[c]).lower().strip() for c in
+campos_clave)
+
+         if clave not in vistos:
+             # Primera vez que vemos este registro, lo guardamos
+             vistos[clave] = registro
+
+         else:
+             # Ya existe uno igual → comparamos cuál es más completo
+             # Contamos campos vacíos (None, "", "Sin datos") de cada uno
+             vacios_nuevo     = sum(1 for v in registro.values() if not v or v == "Sin datos")
+             vacios_existente = sum(1 for v in vistos[clave].values() if not v or v == "Sin datos")
+
+             # Nos quedamos con el que tenga MENOS campos vacíos
+             if vacios_nuevo < vacios_existente:
+                 vistos[clave] = registro
+
+     return list(vistos.values())
+
+

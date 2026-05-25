@@ -1,6 +1,6 @@
 from lib.carga import cargar_csv, cargar_excel, cargar_json, cargar_xml
 
-from lib.limpieza import limpiar_texto, normalizar_texto, limpiar_valor_numerico, eliminar_vacios, normalizar_categoria
+from lib.limpieza import limpiar_texto, normalizar_texto, limpiar_valor_numerico, eliminar_vacios, eliminar_duplicados, normalizar_categoria
 
 artistas = cargar_csv('datos', 'artistas.csv') 
 
@@ -94,3 +94,6 @@ def procesar_entradas(lista):
     return (lista_limpia)
 
 venta_entradas_limpio = procesar_entradas(ventas_entradas)
+
+artistas_limpio = eliminar_duplicados(artistas_limpio, ['nombre'])
+
