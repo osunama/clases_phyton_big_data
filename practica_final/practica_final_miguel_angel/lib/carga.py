@@ -49,7 +49,7 @@ def cargar_xml(carpeta, fichero):
             'fecha_fin': pat.find('fecha_fin').text,            
         }
         lista_patrocinadores.append(patrocinador)
-    print (lista_patrocinadores)
+    return lista_patrocinadores
 
   
 
