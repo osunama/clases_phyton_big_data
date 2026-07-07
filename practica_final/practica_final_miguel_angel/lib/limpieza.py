@@ -3,6 +3,7 @@
 # Elimine espacios dobles o múltiples en medio del texto.
 # Devuelva el texto limpio sin cambiar mayúsculas/minúsculas.
 
+
 def limpiar_texto(valor):
     if not valor:
         return 'Sin datos'
@@ -36,7 +37,6 @@ correcciones_tildes = {
 
 def normalizar_texto(texto):
     texto = limpiar_texto(texto)
-
     palabras = texto.split()
 
     palabras_tildes = []
@@ -67,6 +67,8 @@ def limpiar_valor_numerico(valor):
 
         valor = valor.replace(".", "")
         valor = valor.replace(",", ".")
+        valor = valor.replace("-", "")
+        valor = valor.replace("99999", "99")
 
         numero = float(valor)
 
@@ -537,6 +539,33 @@ def normalizar_fecha(fecha_texto):
         print(f"  ⚠  AVISO: error al parsear '{fecha}' → {e}")
         fechas_invalidas += 1
         return "FECHA INVÁLIDA"
+    
+# ===========================================================
+# ELIMINA FECHA NVALIDA
+# =================================================
+
+def procesar_registros(registros):
+
+    registros_limpios = []
+
+    for registro in registros:
+
+        fecha_limpia = normalizar_fecha(
+            registro["fecha"]
+        )
+
+        # Si la fecha es inválida → eliminar registro
+        if fecha_limpia == "FECHA INVÁLIDA":
+            continue
+
+        nuevo = {
+            "fecha": fecha_limpia,
+            "nombre": registro["nombre"]
+        }
+
+        registros_limpios.append(nuevo)
+
+    return registros_limpios
 
 # =============== LIMPIAR HORAS =====================
 def limpiar_hora(hora):
@@ -675,13 +704,7 @@ mapeo_escenarios = {
     # Sonar
     "sonar":                   "Sónar",
     "sónar":                   "Sónar",
-}
 
-# ================================================================
-# LMPIAR ESCENARIO
-# ================================================================
-
-mapeo_escenarios = {
     "wizink":                  "WiZink Center",
     "wizink center":           "WiZink Center",
     "palacio de deportes":     "WiZink Center",
@@ -741,3 +764,588 @@ def limpiar_escenario(escenario):
     return escenario.title()
 
 
+# ===========================================================
+# LIMPIEZA METODOS PAHGO
+# ============================================================
+mapeo_metodos_pago = {
+    # Efectivo
+    "efectivo": "Efectivo",
+    "EFECTIVO": "Efectivo",
+    "Efectivo": "Efectivo",
+    "metalico": "Efectivo",
+    "Metálico": "Efectivo",
+    "Cash": "Efectivo",
+    "cash": "Efectivo",
+    
+    # PayPal
+    "paypal": "PayPal",
+    "PAYPAL": "PayPal",
+    "PayPal": "PayPal",
+    "Paypal": "PayPal",
+    "Pay Pal": "PayPal",
+    "pay pal": "PayPal",
+    
+    # Tarjeta
+    "tarjeta": "Tarjeta",
+    "TARJETA": "Tarjeta",
+    "Tarjeta": "Tarjeta",
+    "tarjeta credito": "Tarjeta",
+    "tarjeta de crédito": "Tarjeta",
+    "tarjeta de credito": "Tarjeta",
+    "Tarjeta de crédito": "Tarjeta",
+    "Visa": "Tarjeta",
+    "VISA": "Tarjeta",
+    
+    # Transferencia
+    "transferencia": "Transferencia",
+    "TRANSFERENCIA": "Transferencia",
+    "Transferencia": "Transferencia",
+    "transferencia bancaria": "Transferencia",
+    "Transfer.": "Transferencia",
+    "transfer.": "Transferencia",
+    
+    # Bizum
+    "bizum": "Bizum",
+    "BIZUM": "Bizum",
+    "Bizum": "Bizum",
+    "Bisum": "Bizum",
+    "bisum": "Bizum",
+    
+    # Casos nulos o no especificados
+    None: "No especificado",
+    "": "No especificado"
+}
+def limpiar_metodo_pago(metodo_pago):
+    """
+    Limpia y normaliza el método de pago.
+    
+    Si está vacío devuelve 'No especificado'
+    """
+
+    # Valores nulos
+    if metodo_pago is None:
+        return "No especificado"
+
+    # Convertir a texto
+    metodo_pago = str(metodo_pago).strip()
+
+    # Vacío
+    if metodo_pago == "":
+        return "No especificado"
+
+    # Pasar a minúsculas
+    metodo_pago = metodo_pago.lower()
+
+    # Quitar acentos manualmente
+    reemplazos = {
+        "á": "a",
+        "é": "e",
+        "í": "i",
+        "ó": "o",
+        "ú": "u",
+    }
+
+    for viejo, nuevo in reemplazos.items():
+        metodo_pago = metodo_pago.replace(viejo, nuevo)
+
+    # Eliminar dobles espacios
+    while "  " in metodo_pago:
+        metodo_pago = metodo_pago.replace("  ", " ")
+
+    # Buscar en mapeo
+    if metodo_pago in mapeo_metodos_pago:
+        return mapeo_metodos_pago[metodo_pago]
+
+    # Casos especiales
+    if "visa" in metodo_pago:
+        return "Tarjeta"
+
+    if "mastercard" in metodo_pago:
+        return "Tarjeta"
+
+    return metodo_pago
+
+
+def limpiar_dni(dni):
+    """
+    Limpia y valida un DNI español.
+
+    Reglas:
+    - Elimina espacios y guiones
+    - Convierte la letra a mayúscula
+    - Valida formato y letra
+    - Devuelve "" si no es válido
+    """
+
+    if not dni:
+        return None
+
+    # Limpiar
+    dni = str(dni).strip().upper()
+
+    dni = dni.replace(" ", "")
+    dni = dni.replace("-", "")
+
+    # Debe tener 8 números + 1 letra
+    if len(dni) != 9:
+        return None
+
+    numero = dni[:8]
+    letra = dni[8]
+
+    # Validar número
+    if not numero.isdigit():
+        return None
+
+    # Validar letra
+    letras = "TRWAGMYFPDXBNJZSQVHLCKE"
+
+    letra_correcta = letras[int(numero) % 23]
+
+    if letra != letra_correcta:
+        return None
+
+    return numero + letra
+
+# ==========================================
+# LIMPIAR mapeo_escenarios
+# =================
+mapeo_escenarios = {
+    # Escenario Principal
+    "Esc. Principal":       "Escenario Principal",
+    "Escenario Principal":  "Escenario Principal",
+    "ESCENARIO PRINCIPAL":  "Escenario Principal",
+    "Escenario principal":  "Escenario Principal",
+    "escenario principal":  "Escenario Principal",
+    "Main Stage":           "Escenario Principal",   # versión en inglés
+
+    # Escenario Bosque
+    "Esc. Bosque":          "Escenario Bosque",
+    "Escenario Bosque":     "Escenario Bosque",
+    "ESCENARIO BOSQUE":     "Escenario Bosque",
+    "Escenario bosque":     "Escenario Bosque",
+    "escenario bosque":     "Escenario Bosque",
+
+    # Escenario Luna
+    "Esc. Luna":            "Escenario Luna",
+    "Escenario Luna":       "Escenario Luna",
+    "ESCENARIO LUNA":       "Escenario Luna",
+    "Escenario luna":       "Escenario Luna",
+    "escenario luna":       "Escenario Luna",
+
+    # Escenario Sol
+    "Esc. Sol":             "Escenario Sol",
+    "Escenario Sol":        "Escenario Sol",
+    "ESCENARIO SOL":        "Escenario Sol",
+    "Escenario sol":        "Escenario Sol",
+    "escenario sol":        "Escenario Sol",
+
+    # Escenario Río
+    "Esc. Río":             "Escenario Río",
+    "Esc. Rio":             "Escenario Río",   # falta tilde
+    "Escenario Río":        "Escenario Río",
+    "Escenario Rio":        "Escenario Río",   # falta tilde
+    "ESCENARIO RIO":        "Escenario Río",   # falta tilde
+    "escenario rio":        "Escenario Río",   # falta tilde
+}
+
+
+def limpiar_escenario(escenario):
+    
+    # Campo vacío
+    if escenario is None:
+        return None
+
+    escenario = str(escenario).strip()
+
+    if escenario == "":
+        return None
+
+    # Normalizar
+    escenario = escenario.lower()
+
+    # Quitar acentos manualmente
+    reemplazos = {
+        "á": "a",
+        "é": "e",
+        "í": "i",
+        "ó": "o",
+        "ú": "u",
+    }
+
+    for viejo, nuevo in reemplazos.items():
+        escenario = escenario.replace(viejo, nuevo)
+
+    # Eliminar dobles espacios
+    while "  " in escenario:
+        escenario = escenario.replace("  ", " ")
+
+    # Mapeo normalizado
+    mapeo_normalizado = {}
+
+    for clave, valor in mapeo_escenarios.items():
+
+        clave_normalizada = clave.lower()
+
+        for viejo, nuevo in reemplazos.items():
+            clave_normalizada = clave_normalizada.replace(viejo, nuevo)
+
+        mapeo_normalizado[clave_normalizada] = valor
+
+    # Buscar en el mapeo
+    if escenario in mapeo_normalizado:
+        return mapeo_normalizado[escenario]
+
+    # Si no existe
+    return escenario.title()
+
+
+# ================================================================
+# LIMPIAR EMAIL
+# =================================================
+
+def limpiar_email(email):
+    """
+    Comprueba si un email es válido.
+
+    Reglas básicas:
+    - Debe tener un solo @
+    - Debe tener dominio
+    - Debe tener punto después del @
+    - No puede tener espacios
+    """
+
+    if not email:
+        return "Email no válido"
+
+    email = str(email).strip()
+
+    # No espacios
+    if " " in email:
+        return "Email no válido"
+
+    # Debe tener un solo @
+    if email.count("@") != 1:
+        return "Email no válido"
+
+    usuario, dominio = email.split("@")
+
+    # Usuario vacío
+    if usuario == "":
+        return "Email no válido"
+
+    # Dominio vacío
+    if dominio == "":
+        return "Email no válido"
+
+    # Debe existir un punto en dominio
+    if "." not in dominio:
+        return "Email no válido"
+
+    # El punto no puede estar al inicio o final
+    if dominio.startswith(".") or dominio.endswith("."):
+        return "Email no válido"
+
+    return (email)
+# ======================================================
+# LIMPIAR TELEFONO
+# ===============================================
+def limpiar_telefono(telefono):
+    """
+    Limpia y normaliza teléfonos españoles.
+
+    Reglas:
+    - Elimina espacios
+    - Elimina guiones
+    - Elimina paréntesis
+    - Convierte 0034XXXXXXXXX → +34XXXXXXXXX
+    - Mantiene formato final: +34XXXXXXXXX
+    - Si no es válido → "Teléfono no válido"
+    """
+
+    if telefono is None:
+        return "Teléfono no válido"
+
+    telefono = str(telefono).strip()
+
+    if telefono == "":
+        return "Teléfono no válido"
+
+    # Eliminar caracteres innecesarios
+    caracteres_eliminar = [
+        " ",
+        "-",
+        "(",
+        ")",
+        "."
+    ]
+
+    for c in caracteres_eliminar:
+        telefono = telefono.replace(c, "")
+
+    # 0034XXXXXXXXX → +34XXXXXXXXX
+    if telefono.startswith("0034"):
+        telefono = "+" + telefono[2:]
+
+    # Si empieza por 34 sin +
+    elif telefono.startswith("34") and len(telefono) == 11:
+        telefono = "+" + telefono
+
+    # Si tiene 9 dígitos españoles
+    elif telefono.isdigit() and len(telefono) == 9:
+        telefono = "+34" + telefono
+
+    # Validar formato final
+    if not telefono.startswith("+34"):
+        return "Teléfono no válido"
+
+    numeros = telefono[3:]
+
+    # Deben ser 9 números
+    if not numeros.isdigit():
+        return "Teléfono no válido"
+
+    if len(numeros) != 9:
+        return "Teléfono no válido"
+
+    # Debe empezar por 6, 7, 8 o 9
+    if numeros[0] not in ["6", "7", "8", "9"]:
+        return "Teléfono no válido"
+
+    return telefono
+
+# ==============================================
+# LIMPIAR CATEGORIA
+# ========================
+mapeo_categorias = {
+    # Oro (nivel alto)
+    "Oro":     "Oro",
+    "ORO":     "Oro",
+    "oro":     "Oro",
+    "Oro ":    "Oro",     # espacio final
+    "Gold":    "Oro",     # inglés
+    "GOLD":    "Oro",     # inglés
+
+    # Plata (nivel medio)
+    "Plata":   "Plata",
+    "PLATA":   "Plata",
+    "Silver":  "Plata",   # inglés
+    "SILVER":  "Plata",   # inglés
+
+    # Bronce (nivel bajo)
+    "Bronce":  "Bronce",
+    "BRONCE":  "Bronce",
+    "bronce":  "Bronce",
+    "Bronze":  "Bronce",  # inglés
+    "BRONZE":  "Bronce",  # inglés
+}
+
+def limpiar_categoria(categoria):
+    """
+    Limpia y normaliza la categoría.
+
+    Categorías válidas:
+    - Oro
+    - Plata
+    - Bronce
+
+    Si no es válida:
+    → "Categoría no válida"
+    """
+
+    if categoria is None:
+        return "Categoría no válida"
+
+    categoria = str(categoria).strip()
+
+    if categoria == "":
+        return "Categoría no válida"
+
+    # Pasar a minúsculas
+    categoria = categoria.lower()
+
+    # Eliminar dobles espacios
+    while "  " in categoria:
+        categoria = categoria.replace("  ", " ")
+
+    # Crear mapeo normalizado
+    mapeo_normalizado = {}
+
+    for clave, valor in mapeo_categorias.items():
+
+        clave_normalizada = clave.strip().lower()
+
+        mapeo_normalizado[clave_normalizada] = valor
+
+    # Buscar categoría
+    if categoria in mapeo_normalizado:
+        return mapeo_normalizado[categoria]
+
+    return "Categoría no válida"
+
+
+# ========================================================
+# LIMPIAR TIPOS ENTRADA
+# ========================================================
+
+
+mapeo_tipos_entrada = {
+    # General
+    "General":   "General",
+    "GENERAL":   "General",
+    "general":   "General",
+    "general ":  "General",   # espacio final
+    "Gral":      "General",   # abreviatura
+    "Gral.":     "General",   # abreviatura con punto
+
+    # Premium
+    "Premium":   "Premium",
+    "premium":   "Premium",
+    "PREMIUM":   "Premium",
+    "Prémium":   "Premium",   # tilde incorrecta (no lleva)
+    "Premiun":   "Premium",   # typo (n por m al final)
+
+    # VIP
+    "VIP":       "VIP",
+    "Vip":       "VIP",
+    "vip":       "VIP",
+    "VIP ":      "VIP",       # espacio final
+    " VIP":      "VIP",       # espacio inicial
+    "V.I.P.":    "VIP",       # con puntos
+}
+
+def limpiar_tipo_entrada(tipo_entrada):
+    """
+    Limpia y normaliza el tipo de entrada.
+
+    Tipos válidos:
+    - General
+    - Premium
+    - VIP
+
+    Si no es válido:
+    → "Tipo de entrada no válido"
+    """
+
+    if tipo_entrada is None:
+        return "Tipo de entrada no válido"
+
+    tipo_entrada = str(tipo_entrada).strip()
+
+    if tipo_entrada == "":
+        return "Tipo de entrada no válido"
+
+    # Pasar a minúsculas
+    tipo_entrada = tipo_entrada.lower()
+
+    # Quitar acentos manualmente
+    reemplazos = {
+        "á": "a",
+        "é": "e",
+        "í": "i",
+        "ó": "o",
+        "ú": "u",
+    }
+
+    for viejo, nuevo in reemplazos.items():
+        tipo_entrada = tipo_entrada.replace(viejo, nuevo)
+
+    # Eliminar dobles espacios
+    while "  " in tipo_entrada:
+        tipo_entrada = tipo_entrada.replace("  ", " ")
+
+    # Crear mapeo normalizado
+    mapeo_normalizado = {}
+
+    for clave, valor in mapeo_tipos_entrada.items():
+
+        clave_normalizada = clave.strip().lower()
+
+        for viejo, nuevo in reemplazos.items():
+            clave_normalizada = clave_normalizada.replace(viejo, nuevo)
+
+        mapeo_normalizado[clave_normalizada] = valor
+
+    # Buscar en el mapeo
+    if tipo_entrada in mapeo_normalizado:
+        return mapeo_normalizado[tipo_entrada]
+
+    return "Tipo de entrada no válido"
+
+# ================================================================
+# PROCESAR 
+# ================================================================
+
+
+# id_artista,nombre,genero_musical,pais,cache_eur,email_manager,telefono
+def procesar_artistas(lista):
+#     ## recorrer la lista y a cada item
+#      # limpiezaitem['nombre]
+    lista_limpia=[]
+    for item in lista:
+        item_limpio= {
+            "id_artista": item['id_artista'],
+            "nombre": normalizar_texto(item['nombre']),
+            "genero_musical": normalizar_categoria(item['genero_musical'], mapeo_generos   ),
+            "pais": normalizar_paises(item['pais'], mapeo_paises),
+            "cache_eur": limpiar_valor_numerico(item['cache_eur']),
+            "email_manager":limpiar_email(item['email_manager']),
+            "telefono": limpiar_telefono(item['telefono'])
+        }
+        if item_limpio["telefono"] != "Teléfono no válido":
+            lista_limpia.append(item_limpio)
+        if item_limpio["email_manager"] != "Email no válido":
+            lista_limpia.append(item_limpio)
+        
+    return lista_limpia
+
+def procesar_escenarios(lista):
+    lista_limpia=[]
+    for item in lista:
+        item_limpio= {
+            "fecha": normalizar_fecha(item['fecha']),
+            "escenario": limpiar_escenario(item['escenario']),
+            "artista": normalizar_texto(item['artista']),
+            "hora_inicio": limpiar_hora(item['hora_inicio']),
+            "hora_fin": limpiar_hora(item['hora_fin']),
+            "soundcheck": limpiar_hora(item['soundcheck']),
+            "notas": normalizar_texto(item['notas'])
+        }
+        if item_limpio["fecha"] != "FECHA INVÁLIDA":
+            lista_limpia.append(item_limpio)
+    return lista_limpia
+
+def procesar_patrocinadores(lista):
+    lista_limpia=[]
+    for item in lista:
+        item_limpio= {
+            "nombre_empresa": normalizar_texto(item['nombre_empresa']),
+            "contacto": normalizar_texto(item['contacto']),
+            "email": limpiar_email(item['email']),
+            "importe_patrocinio": limpiar_valor_numerico(item['importe_patrocinio']),
+            "categoria": limpiar_categoria(item['categoria']),
+            "fecha_inicio": normalizar_fecha(item['fecha_inicio']),
+            "fecha_fin": normalizar_fecha(item['fecha_fin'])
+        }
+        if item_limpio["email"] != "Email no válido":
+            lista_limpia.append(item_limpio)
+        if item_limpio["contacto"] != "Sin Datos":
+            lista_limpia.append(item_limpio)
+    return lista_limpia
+
+def procesar_entradas(lista):
+    lista_limpia=[]
+    for item in lista:
+        item_limpio= {
+            "id_venta": item['id_venta'],
+            "nombre_comprador": normalizar_texto(item['nombre_comprador']),
+            "email": limpiar_email(item['email']),
+            "dni": limpiar_dni(item['dni']),
+            "tipo_entrada": limpiar_tipo_entrada(item['tipo_entrada']),
+            "precio": limpiar_valor_numerico(item['precio']),
+            "fecha_compra": normalizar_fecha(item['fecha_compra']),
+            "metodo_pago": limpiar_metodo_pago(item['metodo_pago'])
+
+        }
+        lista_limpia.append(item_limpio)
+    return (lista_limpia)
